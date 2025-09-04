@@ -2,27 +2,19 @@
 
 # This Gemfile is used for plugin development and testing
 # In production, Redmine will handle all dependencies
+# Note: Avoid gems that are already included in Redmine's main Gemfile
 
 source 'https://rubygems.org'
 
-# Development dependencies
-group :development do
-  # Note: RuboCop is already included in Redmine's Gemfile
-  # gem 'rubocop', require: false
-  gem 'rubocop-rails', require: false
-end
-
-# Test dependencies
+# Test dependencies (only gems not in Redmine's Gemfile)
 group :test do
   gem 'rspec', '~> 3.0'
-  gem 'rspec-rails'
   gem 'factory_bot_rails'
 end
 
-# Development and test
+# Development and test dependencies
 group :development, :test do
   gem 'pry'
-  gem 'pry-rails'
 end
 
 # Note: Redmine core dependencies are managed by the main Redmine application

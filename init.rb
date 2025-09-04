@@ -1,5 +1,5 @@
 require 'redmine'
-require 'move_comments_hooks'
+require_relative 'lib/move_comments_hooks'
 
 Redmine::Plugin.register :redmine_move_comments do
   name 'Redmine Move Comments plugin'

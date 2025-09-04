@@ -1,54 +1,108 @@
+# frozen_string_literal: true
+
+# Hook class for Redmine Move Comments Plugin
+# Provides functionality to move comments between issues
 class MoveCommentsHooks < Redmine::Hook::Listener
   
-  # render partial for 'Move the comment to another issue'
-  def view_journals_notes_form_after_notes(context={})
+  # Renders the 'Move comment to another issue' form field
+  # This hook is called after the notes form in the journal edit view
+  # 
+  # @param context [Hash] The context hash containing controller and other data
+  # @return [String] Rendered HTML for the move comment form field
+  def view_journals_notes_form_after_notes(context = {})
+    return '' unless context[:controller]
+    
     context[:controller].render_to_string(
-      :partial => "notes_edit",
-      :locals => {}
+      partial: 'notes_edit',
+      locals: {}
     )
   end
  
-  # fetch 'new_issue_id' param and move the journal to another issue if presented
-  def controller_journals_edit_post(context={})
+  # Processes the journal edit form submission and moves the comment if requested
+  # This hook is called after a journal edit POST request
+  # 
+  # @param context [Hash] The context hash containing params, journal, and other data
+  # @return [void]
+  def controller_journals_edit_post(context = {})
+    return unless context[:journal] && context[:params]
+    
     new_issue_id = context[:params]['new_issue_id']
-    # this attribute will be analyzed in any case
-    context[:journal].class.module_eval { attr_accessor :wrong_new_issue_id}
+    
+    # Add accessor for error tracking
+    context[:journal].class.module_eval { attr_accessor :wrong_new_issue_id }
     context[:journal].wrong_new_issue_id = nil
-    if new_issue_id.present?
-      current_journal = context[:journal]
-      issue_id = nil
-      begin
-        issue = Issue.find(new_issue_id)
-        if issue
-          issue_id = issue.id
-        end
-      rescue
-      end
-      if !issue_id
-        context[:journal].wrong_new_issue_id = new_issue_id # this will be analyzed later for showing the error message
-	return
-      end
-      journal = Journal.new(:journalized_id => issue_id, :journalized_type => current_journal.journalized_type, :user_id => current_journal.user_id, :notes => current_journal.notes, :private_notes => current_journal.private_notes, :created_on => current_journal.created_on)
-      journal.save
-      # erase notes for current journal or delete it if it has no details
-      if current_journal.details.empty?
-        current_journal.destroy
-      else
-        current_journal.update_attributes(:notes => nil)
-      end
+    
+    return unless new_issue_id.present?
+    
+    current_journal = context[:journal]
+    target_issue = find_target_issue(new_issue_id)
+    
+    if target_issue.nil?
+      # Store the invalid ID for error display
+      context[:journal].wrong_new_issue_id = new_issue_id
+      return
+    end
+    
+    move_journal_to_issue(current_journal, target_issue)
+  end
+  
+  private
+  
+  # Finds the target issue by ID with error handling
+  # 
+  # @param issue_id [String, Integer] The ID of the target issue
+  # @return [Issue, nil] The found issue or nil if not found/invalid
+  def find_target_issue(issue_id)
+    Issue.find(issue_id)
+  rescue ActiveRecord::RecordNotFound, ArgumentError
+    nil
+  end
+  
+  # Moves a journal (comment) from one issue to another
+  # 
+  # @param source_journal [Journal] The journal to move
+  # @param target_issue [Issue] The target issue to move the journal to
+  # @return [void]
+  def move_journal_to_issue(source_journal, target_issue)
+    # Create new journal for target issue
+    new_journal = Journal.new(
+      journalized_id: target_issue.id,
+      journalized_type: source_journal.journalized_type,
+      user_id: source_journal.user_id,
+      notes: source_journal.notes,
+      private_notes: source_journal.private_notes,
+      created_on: source_journal.created_on
+    )
+    
+    return unless new_journal.save
+    
+    # Clean up source journal
+    if source_journal.details.empty?
+      source_journal.destroy
+    else
+      source_journal.update(notes: nil)
     end
   end
   
-  def view_journals_update_js_bottom(context={})
+  public
+  
+  # Renders error message if journal move failed
+  # This hook is called at the bottom of journal update JavaScript responses
+  # 
+  # @param context [Hash] The context hash containing journal and controller
+  # @return [String, nil] Rendered error JavaScript or nil if no error
+  def view_journals_update_js_bottom(context = {})
+    return unless context[:journal] && context[:controller]
+    
     wrong_new_issue_id = context[:journal].wrong_new_issue_id
-    if !wrong_new_issue_id.nil?
-      context[:controller].render_to_string(
-        :partial => "notes_error",
-        :locals => {
-          :wrong_new_issue_id => wrong_new_issue_id
-        }
-      ) 
-    end
+    return if wrong_new_issue_id.nil?
+    
+    context[:controller].render_to_string(
+      partial: 'notes_error',
+      locals: {
+        wrong_new_issue_id: wrong_new_issue_id
+      }
+    )
   end
  
 end

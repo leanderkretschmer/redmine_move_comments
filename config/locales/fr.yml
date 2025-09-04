@@ -1,0 +1,4 @@
+fr:
+  label_move_to_issue: "Déplacer le commentaire vers un autre ticket"
+  wrong_issue_id: "ID de ticket de destination incorrect spécifié"
+  comment_wont_be_moved: "Le commentaire ne sera pas déplacé!"

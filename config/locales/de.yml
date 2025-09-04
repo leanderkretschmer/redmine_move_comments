@@ -1,0 +1,4 @@
+de:
+  label_move_to_issue: "Kommentar zu anderem Ticket verschieben"
+  wrong_issue_id: "Falsche Ziel-Ticket-ID angegeben"
+  comment_wont_be_moved: "Der Kommentar wird nicht verschoben!"

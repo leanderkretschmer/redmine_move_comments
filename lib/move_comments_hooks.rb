@@ -12,9 +12,18 @@ class MoveCommentsHooks < Redmine::Hook::Listener
   def view_journals_notes_form_after_notes(context = {})
     return '' unless context[:controller]
     
+    # Get user tickets if setting is enabled
+    user_tickets = []
+    if show_user_tickets_enabled?
+      user_tickets = get_user_tickets(User.current)
+    end
+    
     context[:controller].render_to_string(
       partial: 'notes_edit',
-      locals: {}
+      locals: {
+        user_tickets: user_tickets,
+        show_user_tickets: show_user_tickets_enabled?
+      }
     )
   end
  
@@ -47,6 +56,35 @@ class MoveCommentsHooks < Redmine::Hook::Listener
   end
   
   private
+  
+  # Checks if the show user tickets setting is enabled
+  # 
+  # @return [Boolean] True if setting is enabled, false otherwise
+  def show_user_tickets_enabled?
+    Setting.plugin_redmine_move_comments['show_user_tickets'] == '1'
+  end
+  
+  # Gets tickets where the user has commented
+  # 
+  # @param user [User] The user to search tickets for
+  # @return [Array<Hash>] Array of hashes with :id and :subject
+  def get_user_tickets(user)
+    return [] unless user
+    
+    # Find issues where user has journals (comments)
+    issue_ids = Journal.joins(:issue)
+                      .where(user_id: user.id, journalized_type: 'Issue')
+                      .where.not(notes: [nil, ''])
+                      .distinct
+                      .pluck(:journalized_id)
+    
+    # Get issue details
+    Issue.where(id: issue_ids)
+         .limit(10) # Limit to avoid performance issues
+         .order(:id)
+         .pluck(:id, :subject)
+         .map { |id, subject| { id: id, subject: subject } }
+  end
   
   # Finds the target issue by ID with error handling
   # 

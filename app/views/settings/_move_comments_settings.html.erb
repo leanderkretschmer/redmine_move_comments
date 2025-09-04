@@ -1,0 +1,5 @@
+<p>
+  <%= content_tag :label, l(:label_show_user_tickets) %>
+  <%= check_box_tag 'settings[show_user_tickets]', '1', @settings['show_user_tickets'] == '1' %>
+  <em class="info"><%= l(:text_show_user_tickets_info) %></em>
+</p>

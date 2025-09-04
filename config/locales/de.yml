@@ -2,3 +2,7 @@ de:
   label_move_to_issue: "Kommentar zu anderem Ticket verschieben"
   wrong_issue_id: "Falsche Ziel-Ticket-ID angegeben"
   comment_wont_be_moved: "Der Kommentar wird nicht verschoben!"
+  label_show_user_tickets: "Benutzer-Tickets mit Kommentaren anzeigen"
+  text_show_user_tickets_info: "Zeigt eine Liste der Tickets an, in denen der Benutzer Kommentare verfasst hat"
+  label_your_tickets_with_comments: "Ihre Tickets mit Kommentaren"
+  text_click_to_select_ticket: "Klicken Sie auf ein Ticket, um die ID automatisch auszufüllen"

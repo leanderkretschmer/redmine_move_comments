@@ -23,7 +23,7 @@
             <div style="font-weight: bold; color: #169;">#<%= ticket[:id] %></div>
             <div style="color: #333; margin-top: 2px;"><%= truncate(ticket[:subject], :length => 45) %></div>
             <% if defined?(show_project_info) && show_project_info && ticket[:project] %>
-              <div style="color: #666; font-size: 10px; margin-top: 2px;">📁 <%= ticket[:project] %></div>
+              <div style="color: #666; font-size: 10px; margin-top: 2px;"><%= ticket[:project] %></div>
             <% end %>
           </div>
         <% end %>

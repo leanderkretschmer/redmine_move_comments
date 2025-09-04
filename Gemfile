@@ -7,7 +7,8 @@ source 'https://rubygems.org'
 
 # Development dependencies
 group :development do
-  gem 'rubocop', '~> 1.0', require: false
+  # Note: RuboCop is already included in Redmine's Gemfile
+  # gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
 end
 

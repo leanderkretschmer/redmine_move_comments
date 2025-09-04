@@ -1,25 +1,51 @@
-<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
-  <p><strong><%=h t('label_move_to_issue') %></strong></p>
-  <p style="margin-top: 10px;">
-    <%= text_field_tag :new_issue_id, '', :placeholder => 'Ticket-ID eingeben...', :style => 'width: 150px;' %>
-  </p>
+<div style="margin-top: 15px; padding: 10px; border-top: 1px solid #e0e0e0; background: #fafafa;">
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+    <strong><%=h t('label_move_to_issue') %></strong>
+    <%= text_field_tag :new_issue_id, '', :placeholder => 'ID...', :style => 'width: 80px; padding: 3px;' %>
+  </div>
   
   <% if defined?(show_user_tickets) && show_user_tickets && defined?(user_tickets) && user_tickets.any? %>
-    <div style="margin-top: 15px;">
-      <p><strong><%=h t('label_your_tickets_with_comments') %></strong></p>
-      <div style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 5px; margin-top: 5px;">
+    <div style="margin-top: 8px;">
+      <% if defined?(enable_ticket_search) && enable_ticket_search %>
+        <div style="margin-bottom: 8px;">
+          <%= text_field_tag :ticket_search, '', :placeholder => t('placeholder_search_tickets'), 
+                             :style => 'width: 200px; padding: 3px; font-size: 12px;',
+                             :onkeyup => 'filterTickets(this.value)' %>
+        </div>
+      <% end %>
+      
+      <div id="ticket-list" style="max-height: 120px; overflow-y: auto; border: 1px solid #ddd; background: white;">
         <% user_tickets.each do |ticket| %>
-          <div style="padding: 3px 5px; cursor: pointer; border-bottom: 1px solid #f0f0f0;" 
+          <div class="ticket-item" style="padding: 4px 8px; cursor: pointer; border-bottom: 1px solid #f0f0f0; font-size: 12px;" 
                onclick="document.getElementById('new_issue_id').value='<%= ticket[:id] %>';" 
-               onmouseover="this.style.backgroundColor='#f5f5f5';" 
+               onmouseover="this.style.backgroundColor='#e6f3ff';" 
                onmouseout="this.style.backgroundColor='';">
-            <strong>#<%= ticket[:id] %></strong> - <%= truncate(ticket[:subject], :length => 60) %>
+            <div style="font-weight: bold; color: #169;">#<%= ticket[:id] %></div>
+            <div style="color: #333; margin-top: 2px;"><%= truncate(ticket[:subject], :length => 45) %></div>
+            <% if defined?(show_project_info) && show_project_info && ticket[:project] %>
+              <div style="color: #666; font-size: 10px; margin-top: 2px;">📁 <%= ticket[:project] %></div>
+            <% end %>
           </div>
         <% end %>
       </div>
-      <p style="font-size: 11px; color: #666; margin-top: 5px;">
+      
+      <div style="font-size: 10px; color: #666; margin-top: 4px; text-align: center;">
         <%=h t('text_click_to_select_ticket') %>
-      </p>
+      </div>
     </div>
   <% end %>
 </div>
+
+<% if defined?(enable_ticket_search) && enable_ticket_search %>
+<script>
+function filterTickets(searchTerm) {
+  const items = document.querySelectorAll('.ticket-item');
+  const term = searchTerm.toLowerCase();
+  
+  items.forEach(item => {
+    const text = item.textContent.toLowerCase();
+    item.style.display = text.includes(term) ? 'block' : 'none';
+  });
+}
+</script>
+<% end %>

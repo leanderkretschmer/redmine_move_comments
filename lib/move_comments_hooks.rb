@@ -22,7 +22,9 @@ class MoveCommentsHooks < Redmine::Hook::Listener
       partial: 'notes_edit',
       locals: {
         user_tickets: user_tickets,
-        show_user_tickets: show_user_tickets_enabled?
+        show_user_tickets: show_user_tickets_enabled?,
+        enable_ticket_search: ticket_search_enabled?,
+        show_project_info: project_info_enabled?
       }
     )
   end
@@ -64,26 +66,83 @@ class MoveCommentsHooks < Redmine::Hook::Listener
     Setting.plugin_redmine_move_comments['show_user_tickets'] == '1'
   end
   
-  # Gets tickets where the user has commented
+  # Checks if ticket search is enabled
+  # 
+  # @return [Boolean] True if setting is enabled, false otherwise
+  def ticket_search_enabled?
+    Setting.plugin_redmine_move_comments['enable_ticket_search'] == '1'
+  end
+  
+  # Checks if project info display is enabled
+  # 
+  # @return [Boolean] True if setting is enabled, false otherwise
+  def project_info_enabled?
+    Setting.plugin_redmine_move_comments['show_project_info'] == '1'
+  end
+  
+  # Checks if owned tickets should be shown
+  # 
+  # @return [Boolean] True if setting is enabled, false otherwise
+  def show_owned_tickets_enabled?
+    Setting.plugin_redmine_move_comments['show_owned_tickets'] == '1'
+  end
+  
+  # Checks if commented tickets should be shown
+  # 
+  # @return [Boolean] True if setting is enabled, false otherwise
+  def show_commented_tickets_enabled?
+    Setting.plugin_redmine_move_comments['show_commented_tickets'] == '1'
+  end
+  
+  # Gets tickets where the user has commented or owns
   # 
   # @param user [User] The user to search tickets for
-  # @return [Array<Hash>] Array of hashes with :id and :subject
-  def get_user_tickets(user)
+  # @param search_term [String] Optional search term to filter by subject
+  # @return [Array<Hash>] Array of hashes with ticket details
+  def get_user_tickets(user, search_term = nil)
     return [] unless user
     
-    # Find issues where user has journals (comments)
-    issue_ids = Journal.joins(:issue)
-                      .where(user_id: user.id, journalized_type: 'Issue')
-                      .where.not(notes: [nil, ''])
-                      .distinct
-                      .pluck(:journalized_id)
+    issue_ids = []
     
-    # Get issue details
-    Issue.where(id: issue_ids)
-         .limit(10) # Limit to avoid performance issues
-         .order(:id)
-         .pluck(:id, :subject)
-         .map { |id, subject| { id: id, subject: subject } }
+    # Add commented tickets if enabled
+    if show_commented_tickets_enabled?
+      commented_ids = Journal.joins(:issue)
+                            .where(user_id: user.id, journalized_type: 'Issue')
+                            .where.not(notes: [nil, ''])
+                            .distinct
+                            .pluck(:journalized_id)
+      issue_ids.concat(commented_ids)
+    end
+    
+    # Add owned tickets if enabled
+    if show_owned_tickets_enabled?
+      owned_ids = Issue.where(assigned_to_id: user.id).pluck(:id)
+      issue_ids.concat(owned_ids)
+    end
+    
+    return [] if issue_ids.empty?
+    
+    # Build query for issues
+    query = Issue.joins(:project)
+                 .where(id: issue_ids.uniq)
+    
+    # Add search filter if provided
+    if search_term.present?
+      query = query.where("LOWER(#{Issue.table_name}.subject) LIKE LOWER(?)", "%#{search_term}%")
+    end
+    
+    # Get issue details with project info
+    if project_info_enabled?
+      query.limit(15)
+           .order(:id)
+           .pluck(:id, :subject, 'projects.name')
+           .map { |id, subject, project| { id: id, subject: subject, project: project } }
+    else
+      query.limit(15)
+           .order(:id)
+           .pluck(:id, :subject)
+           .map { |id, subject| { id: id, subject: subject } }
+    end
   end
   
   # Finds the target issue by ID with error handling

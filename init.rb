@@ -9,9 +9,12 @@ Redmine::Plugin.register :redmine_move_comments do
   requires_redmine :version_or_higher => '6.0.0'
   url 'https://github.com/leanderkretschmer/redmine_move_comments'
   author_url 'https://github.com/leanderkretschmer'
-  license 'MIT License'
   
   settings :default => {
-    'show_user_tickets' => '0'
+    'show_user_tickets' => '0',
+    'enable_ticket_search' => '0',
+    'show_owned_tickets' => '0',
+    'show_commented_tickets' => '1',
+    'show_project_info' => '0'
   }, :partial => 'settings/move_comments_settings'
 end

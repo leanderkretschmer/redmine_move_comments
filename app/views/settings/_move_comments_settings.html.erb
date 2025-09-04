@@ -1,5 +1,33 @@
-<p>
-  <%= content_tag :label, l(:label_show_user_tickets) %>
-  <%= check_box_tag 'settings[show_user_tickets]', '1', @settings['show_user_tickets'] == '1' %>
-  <em class="info"><%= l(:text_show_user_tickets_info) %></em>
-</p>
+<fieldset>
+  <legend><%= l(:label_move_comments_settings) %></legend>
+  
+  <p>
+    <%= content_tag :label, l(:label_show_user_tickets) %>
+    <%= check_box_tag 'settings[show_user_tickets]', '1', @settings['show_user_tickets'] == '1' %>
+    <em class="info"><%= l(:text_show_user_tickets_info) %></em>
+  </p>
+  
+  <p>
+    <%= content_tag :label, l(:label_enable_ticket_search) %>
+    <%= check_box_tag 'settings[enable_ticket_search]', '1', @settings['enable_ticket_search'] == '1' %>
+    <em class="info"><%= l(:text_enable_ticket_search_info) %></em>
+  </p>
+  
+  <p style="margin-left: 20px;">
+    <%= content_tag :label, l(:label_show_owned_tickets) %>
+    <%= check_box_tag 'settings[show_owned_tickets]', '1', @settings['show_owned_tickets'] == '1' %>
+    <em class="info"><%= l(:text_show_owned_tickets_info) %></em>
+  </p>
+  
+  <p style="margin-left: 20px;">
+    <%= content_tag :label, l(:label_show_commented_tickets) %>
+    <%= check_box_tag 'settings[show_commented_tickets]', '1', @settings['show_commented_tickets'] == '1' %>
+    <em class="info"><%= l(:text_show_commented_tickets_info) %></em>
+  </p>
+  
+  <p>
+    <%= content_tag :label, l(:label_show_project_info) %>
+    <%= check_box_tag 'settings[show_project_info]', '1', @settings['show_project_info'] == '1' %>
+    <em class="info"><%= l(:text_show_project_info_info) %></em>
+  </p>
+</fieldset>

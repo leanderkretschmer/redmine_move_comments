@@ -14,13 +14,13 @@ The plugin allows you to move a comment made to wrong issue to the right one.
 
 ## Getting the plugin
 
-A copy of the plugin can be downloaded from GitHub: http://github.com/VoronyukM/redmine_move_comments
+A copy of the plugin can be downloaded from GitHub: https://github.com/leanderkretschmer/redmine_move_comments
 
 ## Installation
 
 ```
 cd /path/to/redmine/plugins
-git clone https://github.com/VoronyukM/redmine_move_comments.git
+git clone https://github.com/leanderkretschmer/redmine_move_comments.git
 ```
 
 Restart the Redmine.
@@ -43,7 +43,14 @@ You should be allowed to edit the comments for moving them, i.e. have 'Edit note
 
 ## Compatibility
 
-The latest version of this plugin is only compatible with Redmine 2.4.x., 2.5.x, 2.6.x, 3.0.x, 3.1.x, 3.2.x
+This version of the plugin is compatible with:
+- Redmine 2.4.x and higher
+- Redmine 3.x
+- Redmine 4.x
+- Redmine 5.x
+- Redmine 6.x
+
+Tested with Redmine 6.x
 
 ## Contribution
 
@@ -53,4 +60,4 @@ This plugin is licensed under the MIT license. See LICENSE-file for details.
 
 ## Copyright
 
-Copyright (c) 2015 Mikhail Voronyuk, www.3soft.ru. 
+Copyright (c) 2015 Mikhail Voronyuk, www.3soft.ru.

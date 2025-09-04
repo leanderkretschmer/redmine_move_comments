@@ -2,9 +2,9 @@ class MoveCommentsHooks < Redmine::Hook::Listener
   
   # render partial for 'Move the comment to another issue'
   def view_journals_notes_form_after_notes(context={})
-    action_view = ActionView::Base.new(File.dirname(__FILE__) + '/../app/views/')
-    action_view.render(
-      :partial => "notes_edit"
+    context[:controller].render_to_string(
+      :partial => "notes_edit",
+      :locals => {}
     )
   end
  
@@ -40,14 +40,13 @@ class MoveCommentsHooks < Redmine::Hook::Listener
   end
   
   def view_journals_update_js_bottom(context={})
-
     wrong_new_issue_id = context[:journal].wrong_new_issue_id
     if !wrong_new_issue_id.nil?
-      action_view = ActionView::Base.new(File.dirname(__FILE__) + '/../app/views/')
-      action_view.render(
-      :partial => "notes_error",
-      :locals => {
-        :wrong_new_issue_id => wrong_new_issue_id}
+      context[:controller].render_to_string(
+        :partial => "notes_error",
+        :locals => {
+          :wrong_new_issue_id => wrong_new_issue_id
+        }
       ) 
     end
   end

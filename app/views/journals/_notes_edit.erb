@@ -1,1 +1,6 @@
-<%=h t('label_move_to_issue') %> <%= text_field_tag :new_issue_id %>
+<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+  <p><strong><%=h t('label_move_to_issue') %></strong></p>
+  <p style="margin-top: 10px;">
+    <%= text_field_tag :new_issue_id, '', :placeholder => 'Ticket-ID eingeben...', :style => 'width: 150px;' %>
+  </p>
+</div>

@@ -8,7 +8,7 @@
                          :autocomplete => 'off',
                          :oninput => 'autocompleteTickets(this.value)' %>
       <div id="ticket-autocomplete" style="position: relative;">
-        <div id="ticket-autocomplete-list" style="position: absolute; background: white; border: 1px solid #ddd; width: 260px; max-height: 180px; overflow-y: auto; z-index: 9999; display: none;"></div>
+        <div id="ticket-autocomplete-list" style="position: absolute; background: white; border: 1px solid #ddd; width: 260px; max-height: 180px; overflow-y: auto; z-index: 9999; display: none; pointer-events: none;"></div>
       </div>
     <% end %>
   </div>
@@ -46,6 +46,7 @@ async function autocompleteTickets(term) {
   const trimmed = (term || '').trim();
   if (trimmed.length < 1) {
     list.style.display = 'none';
+    list.style.pointerEvents = 'none';
     list.innerHTML = '';
     return;
   }
@@ -73,10 +74,25 @@ async function autocompleteTickets(term) {
       list.appendChild(row);
     });
     list.style.display = data.length ? 'block' : 'none';
+    list.style.pointerEvents = data.length ? 'auto' : 'none';
   } catch(e) {
     list.style.display = 'none';
+    list.style.pointerEvents = 'none';
     list.innerHTML = '';
   }
 }
+
+// Schließe Autocomplete bei Klick außerhalb
+document.addEventListener('click', function(e) {
+  const list = document.getElementById('ticket-autocomplete-list');
+  const input = document.getElementById('ticket_search');
+  if (!list) return;
+  const isClickInside = list.contains(e.target) || (input && input.contains(e.target));
+  if (!isClickInside) {
+    list.style.display = 'none';
+    list.style.pointerEvents = 'none';
+    list.innerHTML = '';
+  }
+});
 </script>
 <% end %>

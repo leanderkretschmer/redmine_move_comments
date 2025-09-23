@@ -173,6 +173,35 @@ class MoveCommentsHooks < Redmine::Hook::Listener
     
     return unless new_journal.save
     
+    # Move attachments referenced by the source journal to the target issue
+    # and recreate their journal details on the new journal
+    attachment_details = source_journal.details.select { |d| d.property == 'attachment' }
+    attachment_details.each do |detail|
+      attachment_id = detail.prop_key.to_i
+      attachment = Attachment.find_by(id: attachment_id)
+      next unless attachment
+
+      # Reassign attachment to the target issue
+      attachment.container = target_issue
+      # If Redmine version has journal_id tracking on Attachment, update it as well
+      attachment.journal_id = new_journal.id if attachment.respond_to?(:journal_id=)
+      attachment.save!
+
+      # Recreate the journal detail on the new journal so history remains accurate
+      JournalDetail.create!(
+        journal: new_journal,
+        property: detail.property,
+        prop_key: detail.prop_key,
+        value: detail.value
+      )
+
+      # Remove the attachment detail from the source journal
+      detail.destroy
+    end
+
+    # Reload to reflect removed details
+    source_journal.reload
+
     # Clean up source journal
     if source_journal.details.empty?
       source_journal.destroy

@@ -44,13 +44,14 @@ async function autocompleteTickets(term) {
   const list = document.getElementById('ticket-autocomplete-list');
   if (!list) return;
   const trimmed = (term || '').trim();
-  if (trimmed.length < 2) {
+  if (trimmed.length < 1) {
     list.style.display = 'none';
     list.innerHTML = '';
     return;
   }
   try {
-    const res = await fetch(`/move_comments_search/issues?term=${encodeURIComponent(trimmed)}`, { headers: { 'Accept': 'application/json' } });
+    const url = '<%= url_for(:controller => "move_comments_search", :action => "issues") %>' + `?term=${encodeURIComponent(trimmed)}`;
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
     if (!res.ok) throw new Error('Network error');
     const data = await res.json();
     list.innerHTML = '';
@@ -59,7 +60,9 @@ async function autocompleteTickets(term) {
       row.style.padding = '4px 8px';
       row.style.cursor = 'pointer';
       row.style.borderBottom = '1px solid #f0f0f0';
-      row.textContent = `#${item.id} ${item.subject}`;
+      const title = item.subject || '';
+      const project = item.project ? ` — ${item.project}` : '';
+      row.textContent = `#${item.id} ${title}${project}`;
       row.onclick = () => {
         document.getElementById('new_issue_id').value = item.id;
         list.style.display = 'none';

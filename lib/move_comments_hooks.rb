@@ -15,7 +15,9 @@ class MoveCommentsHooks < Redmine::Hook::Listener
     # Get user tickets if setting is enabled
     user_tickets = []
     if show_user_tickets_enabled?
-      user_tickets = get_user_tickets(User.current)
+      # Nutze den Autor des aktuellen Journals, falls vorhanden
+      base_user = context[:journal]&.user || User.current
+      user_tickets = get_user_tickets(base_user)
     end
     
     context[:controller].render_to_string(
@@ -55,6 +57,12 @@ class MoveCommentsHooks < Redmine::Hook::Listener
     end
     
     move_journal_to_issue(current_journal, target_issue)
+
+    # Optionaler Redirect nach erfolgreichem Move
+    if redirect_after_move_enabled?
+      context[:journal].class.module_eval { attr_accessor :moved_to_issue_id }
+      context[:journal].moved_to_issue_id = target_issue.id
+    end
   end
   
   private
@@ -78,6 +86,13 @@ class MoveCommentsHooks < Redmine::Hook::Listener
   # @return [Boolean] True if setting is enabled, false otherwise
   def project_info_enabled?
     Setting.plugin_redmine_move_comments['show_project_info'] == '1'
+  end
+
+  # Redirect nach Move aktiv?
+  #
+  # @return [Boolean]
+  def redirect_after_move_enabled?
+    Setting.plugin_redmine_move_comments['redirect_after_move'] == '1'
   end
   
   # Checks if owned tickets should be shown
@@ -221,14 +236,19 @@ class MoveCommentsHooks < Redmine::Hook::Listener
     return unless context[:journal] && context[:controller]
     
     wrong_new_issue_id = context[:journal].wrong_new_issue_id
-    return if wrong_new_issue_id.nil?
-    
-    context[:controller].render_to_string(
-      partial: 'notes_error',
-      locals: {
-        wrong_new_issue_id: wrong_new_issue_id
-      }
-    )
+    moved_to_issue_id = (context[:journal].respond_to?(:moved_to_issue_id) ? context[:journal].moved_to_issue_id : nil)
+
+    if wrong_new_issue_id.present?
+      return context[:controller].render_to_string(
+        partial: 'notes_error',
+        locals: { wrong_new_issue_id: wrong_new_issue_id }
+      )
+    end
+
+    # Wenn Redirect aktiviert und Ziel vorhanden, leite per JS um
+    if moved_to_issue_id.present? && redirect_after_move_enabled?
+      return "window.location = '/issues/#{moved_to_issue_id}';"
+    end
   end
  
 end

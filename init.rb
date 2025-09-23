@@ -15,6 +15,12 @@ Redmine::Plugin.register :redmine_move_comments do
     'enable_ticket_search' => '0',
     'show_owned_tickets' => '0',
     'show_commented_tickets' => '1',
-    'show_project_info' => '0'
+    'show_project_info' => '0',
+    'redirect_after_move' => '0'
   }, :partial => 'settings/move_comments_settings'
+end
+
+# Routes for autocomplete search
+RedmineApp::Application.routes.draw do
+  get 'move_comments_search/issues', to: 'move_comments_search#issues'
 end

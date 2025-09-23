@@ -7,6 +7,8 @@ en:
   text_show_user_tickets_info: "Displays a list of tickets where the user has made comments or owns"
   label_enable_ticket_search: "Enable ticket search"
   text_enable_ticket_search_info: "Allows searching for tickets using a search field"
+  label_redirect_after_move: "Redirect after move"
+  text_redirect_after_move_info: "Automatically navigate to the target issue after a successful move"
   label_show_owned_tickets: "Show owned tickets"
   text_show_owned_tickets_info: "Shows tickets that are assigned to the user"
   label_show_commented_tickets: "Show commented tickets"

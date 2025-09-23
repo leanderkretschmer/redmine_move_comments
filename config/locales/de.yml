@@ -7,6 +7,8 @@ de:
   text_show_user_tickets_info: "Zeigt eine Liste der Tickets an, in denen der Benutzer Kommentare verfasst hat oder die ihm gehören"
   label_enable_ticket_search: "Ticket-Suche aktivieren"
   text_enable_ticket_search_info: "Ermöglicht die Suche nach Tickets über ein Suchfeld"
+  label_redirect_after_move: "Nach dem Verschieben weiterleiten"
+  text_redirect_after_move_info: "Nach erfolgreichem Verschieben automatisch zum Ziel-Ticket wechseln"
   label_show_owned_tickets: "Eigene Tickets anzeigen"
   text_show_owned_tickets_info: "Zeigt Tickets an, die dem Benutzer zugewiesen sind"
   label_show_commented_tickets: "Kommentierte Tickets anzeigen"

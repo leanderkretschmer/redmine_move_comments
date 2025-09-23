@@ -12,6 +12,12 @@
     <%= check_box_tag 'settings[enable_ticket_search]', '1', @settings['enable_ticket_search'] == '1' %>
     <em class="info"><%= l(:text_enable_ticket_search_info) %></em>
   </p>
+
+  <p>
+    <%= content_tag :label, l(:label_redirect_after_move) %>
+    <%= check_box_tag 'settings[redirect_after_move]', '1', @settings['redirect_after_move'] == '1' %>
+    <em class="info"><%= l(:text_redirect_after_move_info) %></em>
+  </p>
   
   <p style="margin-left: 20px;">
     <%= content_tag :label, l(:label_show_owned_tickets) %>

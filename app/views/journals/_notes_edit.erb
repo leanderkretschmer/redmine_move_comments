@@ -2,17 +2,19 @@
   <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
     <strong><%=h t('label_move_to_issue') %></strong>
     <%= text_field_tag :new_issue_id, '', :placeholder => 'ID...', :style => 'width: 80px; padding: 3px;' %>
+    <% if defined?(enable_ticket_search) && enable_ticket_search %>
+      <%= text_field_tag :ticket_search, '', :placeholder => t('placeholder_search_tickets'),
+                         :style => 'width: 260px; padding: 3px; font-size: 12px;',
+                         :autocomplete => 'off',
+                         :oninput => 'autocompleteTickets(this.value)' %>
+      <div id="ticket-autocomplete" style="position: relative;">
+        <div id="ticket-autocomplete-list" style="position: absolute; background: white; border: 1px solid #ddd; width: 260px; max-height: 180px; overflow-y: auto; z-index: 9999; display: none;"></div>
+      </div>
+    <% end %>
   </div>
   
   <% if defined?(show_user_tickets) && show_user_tickets && defined?(user_tickets) && user_tickets.any? %>
     <div style="margin-top: 8px;">
-      <% if defined?(enable_ticket_search) && enable_ticket_search %>
-        <div style="margin-bottom: 8px;">
-          <%= text_field_tag :ticket_search, '', :placeholder => t('placeholder_search_tickets'), 
-                             :style => 'width: 200px; padding: 3px; font-size: 12px;',
-                             :onkeyup => 'filterTickets(this.value)' %>
-        </div>
-      <% end %>
       
       <div id="ticket-list" style="max-height: 120px; overflow-y: auto; border: 1px solid #ddd; background: white;">
         <% user_tickets.each do |ticket| %>
@@ -38,14 +40,40 @@
 
 <% if defined?(enable_ticket_search) && enable_ticket_search %>
 <script>
-function filterTickets(searchTerm) {
-  const items = document.querySelectorAll('.ticket-item');
-  const term = searchTerm.toLowerCase();
-  
-  items.forEach(item => {
-    const text = item.textContent.toLowerCase();
-    item.style.display = text.includes(term) ? 'block' : 'none';
-  });
+async function autocompleteTickets(term) {
+  const list = document.getElementById('ticket-autocomplete-list');
+  if (!list) return;
+  const trimmed = (term || '').trim();
+  if (trimmed.length < 2) {
+    list.style.display = 'none';
+    list.innerHTML = '';
+    return;
+  }
+  try {
+    const res = await fetch(`/move_comments_search/issues?term=${encodeURIComponent(trimmed)}`, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error('Network error');
+    const data = await res.json();
+    list.innerHTML = '';
+    data.forEach(item => {
+      const row = document.createElement('div');
+      row.style.padding = '4px 8px';
+      row.style.cursor = 'pointer';
+      row.style.borderBottom = '1px solid #f0f0f0';
+      row.textContent = `#${item.id} ${item.subject}`;
+      row.onclick = () => {
+        document.getElementById('new_issue_id').value = item.id;
+        list.style.display = 'none';
+        list.innerHTML = '';
+      };
+      row.onmouseover = () => row.style.backgroundColor = '#e6f3ff';
+      row.onmouseout = () => row.style.backgroundColor = '';
+      list.appendChild(row);
+    });
+    list.style.display = data.length ? 'block' : 'none';
+  } catch(e) {
+    list.style.display = 'none';
+    list.innerHTML = '';
+  }
 }
 </script>
 <% end %>

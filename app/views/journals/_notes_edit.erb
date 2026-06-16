@@ -51,7 +51,7 @@ async function autocompleteTickets(term) {
     return;
   }
   try {
-    const url = '<%= url_for(:controller => "move_comments_search", :action => "issues") %>' + `?term=${encodeURIComponent(trimmed)}`;
+    const url = '/move_comments_search/issues' + `?term=${encodeURIComponent(trimmed)}`;
     const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
     if (!res.ok) throw new Error('Network error');
     const data = await res.json();

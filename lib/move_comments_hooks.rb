@@ -223,6 +223,16 @@ class MoveCommentsHooks < Redmine::Hook::Listener
     else
       source_journal.update(notes: nil)
     end
+
+    # Notify listeners (e.g. redmine_comment_pdftopng) that a comment was
+    # moved. Fires only after attachments + their JournalDetails are in
+    # place on the new journal, so listeners can safely scan it.
+    Redmine::Hook.call_hook(
+      :move_comments_after_journal_move,
+      source_journal: source_journal,
+      new_journal: new_journal,
+      target_issue: target_issue
+    )
   end
   
   public

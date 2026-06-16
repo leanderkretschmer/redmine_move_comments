@@ -5,7 +5,7 @@ Redmine::Plugin.register :redmine_move_comments do
   name 'Redmine Move Comments plugin'
   author 'Leander Kretschmer'
   description 'Redmine move comments plugin'
-  version '0.1.0'
+  version '0.2.0'
   requires_redmine :version_or_higher => '6.0.0'
   url 'https://github.com/leanderkretschmer/redmine_move_comments'
   author_url 'https://github.com/leanderkretschmer'

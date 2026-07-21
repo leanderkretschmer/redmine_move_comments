@@ -18,3 +18,7 @@ de:
   label_your_tickets_with_comments: "Ihre Tickets"
   text_click_to_select_ticket: "Klicken zum Auswählen"
   placeholder_search_tickets: "Tickets durchsuchen..."
+  label_cross_project_warning: "Anderes Projekt"
+  text_cross_project_warning: "Ticket #%{issue_id} gehört zum Projekt \"%{target_project}\", nicht zu \"%{source_project}\". Kommentar trotzdem dorthin verschieben?"
+  button_cancel_move: "Abbrechen"
+  button_confirm_move: "Trotzdem verschieben"

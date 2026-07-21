@@ -23,4 +23,5 @@ end
 # Routes for autocomplete search
 RedmineApp::Application.routes.draw do
   get 'move_comments_search/issues', to: 'move_comments_search#issues'
+  get 'move_comments_search/check_issue_project', to: 'move_comments_search#check_issue_project'
 end

@@ -12,21 +12,26 @@ class MoveCommentsHooks < Redmine::Hook::Listener
   def view_journals_notes_form_after_notes(context = {})
     return '' unless context[:controller]
     
-    # Get user tickets if setting is enabled
+    origin_issue = context[:journal]&.journalized
+    origin_project_id = origin_issue&.project_id
+    origin_project_name = origin_issue&.project&.name
+
+    # Get user tickets if setting is enabled, restricted to the same project
     user_tickets = []
     if show_user_tickets_enabled?
-      # Nutze den Autor des aktuellen Journals, falls vorhanden
       base_user = context[:journal]&.user || User.current
-      user_tickets = get_user_tickets(base_user)
+      user_tickets = get_user_tickets(base_user, nil, origin_project_id)
     end
-    
+
     context[:controller].render_to_string(
       partial: 'notes_edit',
       locals: {
         user_tickets: user_tickets,
         show_user_tickets: show_user_tickets_enabled?,
         enable_ticket_search: ticket_search_enabled?,
-        show_project_info: project_info_enabled?
+        show_project_info: project_info_enabled?,
+        origin_project_id: origin_project_id,
+        origin_project_name: origin_project_name
       }
     )
   end
@@ -114,12 +119,11 @@ class MoveCommentsHooks < Redmine::Hook::Listener
   # @param user [User] The user to search tickets for
   # @param search_term [String] Optional search term to filter by subject
   # @return [Array<Hash>] Array of hashes with ticket details
-  def get_user_tickets(user, search_term = nil)
+  def get_user_tickets(user, search_term = nil, project_id = nil)
     return [] unless user
-    
+
     issue_ids = []
-    
-    # Add commented tickets if enabled
+
     if show_commented_tickets_enabled?
       commented_ids = Journal.joins(:issue)
                             .where(user_id: user.id, journalized_type: 'Issue')
@@ -128,25 +132,21 @@ class MoveCommentsHooks < Redmine::Hook::Listener
                             .pluck(:journalized_id)
       issue_ids.concat(commented_ids)
     end
-    
-    # Add owned tickets if enabled
+
     if show_owned_tickets_enabled?
       owned_ids = Issue.where(assigned_to_id: user.id).pluck(:id)
       issue_ids.concat(owned_ids)
     end
-    
+
     return [] if issue_ids.empty?
-    
-    # Build query for issues
-    query = Issue.joins(:project)
-                 .where(id: issue_ids.uniq)
-    
-    # Add search filter if provided
+
+    query = Issue.joins(:project).where(id: issue_ids.uniq)
+    query = query.where(project_id: project_id) if project_id.present?
+
     if search_term.present?
       query = query.where("LOWER(#{Issue.table_name}.subject) LIKE LOWER(?)", "%#{search_term}%")
     end
-    
-    # Get issue details with project info
+
     if project_info_enabled?
       query.limit(15)
            .order(:id)
@@ -216,6 +216,19 @@ class MoveCommentsHooks < Redmine::Hook::Listener
 
     # Reload to reflect removed details
     source_journal.reload
+
+    # Re-point any redmine_sendmail dispatch badges to the new journal/issue
+    # before destroying the source journal, because the sendmail plugin's
+    # before_destroy callback would otherwise delete them.
+    if defined?(RedmineSendmailDispatch)
+      RedmineSendmailDispatch
+        .where(journal_id: source_journal.id)
+        .update_all(
+          journal_id: new_journal.id,
+          issue_id:   target_issue.id,
+          project_id: target_issue.project_id
+        )
+    end
 
     # Clean up source journal
     if source_journal.details.empty?

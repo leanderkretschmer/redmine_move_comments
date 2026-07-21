@@ -18,3 +18,7 @@ en:
   label_your_tickets_with_comments: "Your tickets"
   text_click_to_select_ticket: "Click to select"
   placeholder_search_tickets: "Search tickets..."
+  label_cross_project_warning: "Different project"
+  text_cross_project_warning: "Issue #%{issue_id} belongs to project \"%{target_project}\", not \"%{source_project}\". Move the comment there anyway?"
+  button_cancel_move: "Cancel"
+  button_confirm_move: "Move anyway"

@@ -230,6 +230,28 @@ class MoveCommentsHooks < Redmine::Hook::Listener
         )
     end
 
+    # Re-point the redmine_mail_handler marker row ("this comment came from
+    # an e-mail", table mail_handler_journal_mails) to the new journal/issue
+    # BEFORE the source journal is destroyed. The row is linked by journal_id
+    # only (no FK, no dependent callback), so it would survive the destroy as
+    # an orphan; moving it here keeps the marker intact regardless of whether
+    # the mail_handler hook below runs. Its own hook may re-run the update
+    # afterwards; update_all on zero rows is harmless. Errors must never
+    # abort the move itself.
+    begin
+      if defined?(MailHandlerJournalMail) && MailHandlerJournalMail.table_exists?
+        MailHandlerJournalMail
+          .where(journal_id: source_journal.id)
+          .update_all(journal_id: new_journal.id, issue_id: target_issue.id)
+      end
+    rescue StandardError => e
+      Rails.logger.warn(
+        "[MoveComments] Could not re-point mail_handler_journal_mails row " \
+        "from journal ##{source_journal.id} to journal ##{new_journal.id}: " \
+        "#{e.class}: #{e.message}"
+      )
+    end
+
     # Clean up source journal
     if source_journal.details.empty?
       source_journal.destroy
